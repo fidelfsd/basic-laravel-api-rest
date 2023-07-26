@@ -19,6 +19,9 @@ class CourseFactory extends Factory
         return [
             'name' => fake()->unique()->randomElement(['HTML', 'CSS', 'JavaScript', 'MariaDB', 'MySQL', 'Sequelize']),
             'category' => fake()->randomElement(['Frontend', 'Backend']),
+            'description' => fake()->paragraph(6),
+            'start_date' => fake()->dateTimeThisMonth(),
+            'end_date' => fake()->dateTimeInInterval('+90 days', '+30 days'),
         ];
     }
 }

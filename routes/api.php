@@ -19,7 +19,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('student')->group(__DIR__ . '/api/studentRoutes.php');
+Route::prefix('students')->group(__DIR__ . '/api/studentRoutes.php');
 Route::resource('students', StudentController::class)
     ->missing(function () {
         $data = [
