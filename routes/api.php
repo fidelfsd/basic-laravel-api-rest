@@ -19,6 +19,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/students', [StudentController::class, 'index']);
-Route::get('/students/{student}', [StudentController::class, 'show']);
-Route::post('/students', [StudentController::class, 'store']);
+Route::prefix('student')->group(__DIR__ . '/api/studentRoutes.php');
+Route::resource('students', StudentController::class)
+    ->missing(function () {
+        $data = [
+            'message' => 'Student resource not found'
+        ];
+        return response()->json($data, 404);
+    });

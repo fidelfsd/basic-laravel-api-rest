@@ -77,7 +77,27 @@ class StudentController extends Controller
      */
     public function update(Request $request, Student $student)
     {
-        //
+        try {
+            // put default value if not set in request body
+            $student->name = $request->input('name', $student->name);
+            $student->last_name = $request->input('last_name', $student->last_name);
+            $student->email = $request->input('email', $student->email);
+            $student->address = $request->input('address', $student->address);
+            $student->active = $request->input('active', $student->active);
+            $student->save();
+
+            $data = [
+                'message' => 'Student successfully updated'
+            ];
+            return response()->json($data);
+        } catch (\Throwable $error) {
+            $data = [
+                'message' => 'Error updating student',
+                'error' => $error->getMessage()
+            ];
+
+            return response()->json($data, 500);
+        }
     }
 
     /**
