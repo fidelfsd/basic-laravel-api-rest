@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\StudentActiveStatus;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Enum;
 
 class StudentController extends Controller
 {
@@ -33,6 +36,24 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         try {
+
+
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|alpha:ascii',
+                'last_name' => 'required|alpha:ascii',
+                'email' => 'required|email|unique:students|regex:/.+\@.+\..+/',
+                'address' => 'sometimes|string|nullable',
+                'active' => [new Enum(StudentActiveStatus::class)],
+            ]);
+
+            if ($validator->fails()) {
+                $data = [
+                    'message' => 'Error in field validation',
+                    'error' => $validator->errors()
+                ];
+                return response()->json($data, Response::HTTP_BAD_REQUEST);
+            }
+
             $student = new Student;
             $student->name = $request->name;
             $student->last_name = $request->last_name;
@@ -57,7 +78,7 @@ class StudentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Student $student)
+    public function show(int $student)
     {
         try {
             $data = Student::with('courses')->find($student);
@@ -137,6 +158,30 @@ class StudentController extends Controller
         } catch (\Throwable $error) {
             $data = [
                 'message' => 'Error attaching course to student',
+                'error' => $error->getMessage()
+            ];
+            return response()->json($data, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    /**
+     * Attach course to student.
+     */
+    public function detach(Request $request)
+    {
+        try {
+            $student = Student::find($request->student_id);
+            $student->courses()->detach($request->course_id);
+
+            $data = [
+                'message' => 'Course successfully detached',
+                'student' => $student->id
+            ];
+            return response()->json($data, Response::HTTP_OK);
+        } catch (\Throwable $error) {
+            $data = [
+                'message' => 'Error detaching course to student',
                 'error' => $error->getMessage()
             ];
             return response()->json($data, Response::HTTP_INTERNAL_SERVER_ERROR);
