@@ -16,8 +16,11 @@ class CourseFactory extends Factory
      */
     public function definition(): array
     {
+
+        $courses = ['HTML', 'CSS', 'JavaScript', 'MariaDB', 'MySQL', 'Sequelize'];
+
         return [
-            'name' => fake()->unique()->randomElement(['HTML', 'CSS', 'JavaScript', 'MariaDB', 'MySQL', 'Sequelize']),
+            'name' => fake()->unique()->randomElement($courses),
             'category' => fake()->randomElement(['Frontend', 'Backend']),
             'description' => fake()->paragraph(6),
             'start_date' => fake()->dateTimeThisMonth(),

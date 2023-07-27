@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class StudentController extends Controller
 {
@@ -12,18 +13,19 @@ class StudentController extends Controller
      */
     public function index()
     {
-        $students = Student::paginate(20);
-        // $students = Student::all();
-        return response()->json($students);
+        try {
+            $students = Student::with('courses')->paginate(20);
+            // $students = Student::all();
+            return response()->json($students, Response::HTTP_OK);
+        } catch (\Throwable $error) {
+            $data = [
+                'message' => 'Error retrieving students',
+                'error' => $error->getMessage()
+            ];
+            return response()->json($data, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -32,27 +34,23 @@ class StudentController extends Controller
     {
         try {
             $student = new Student;
-
             $student->name = $request->name;
             $student->last_name = $request->last_name;
             $student->email = $request->email;
             $student->address = $request->address;
             $student->active = $request->active;
-
             $student->save();
 
             $data = [
                 'message' => 'Successfully created a new student'
             ];
-
-            return response()->json($data);
+            return response()->json($data, Response::HTTP_CREATED);
         } catch (\Throwable $error) {
             $data = [
                 'message' => 'Error creating a new student',
                 'error' => $error->getMessage()
             ];
-
-            return response()->json($data, 500);
+            return response()->json($data, Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -61,15 +59,16 @@ class StudentController extends Controller
      */
     public function show(Student $student)
     {
-        return response()->json($student);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Student $student)
-    {
-        //
+        try {
+            $data = Student::with('courses')->find($student);
+            return response()->json($data, Response::HTTP_OK);
+        } catch (\Throwable $error) {
+            $data = [
+                'message' => 'Error retreiving student',
+                'error' => $error->getMessage()
+            ];
+            return response()->json($data, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -89,14 +88,14 @@ class StudentController extends Controller
             $data = [
                 'message' => 'Student successfully updated'
             ];
-            return response()->json($data);
+            return response()->json($data, Response::HTTP_OK);
         } catch (\Throwable $error) {
             $data = [
                 'message' => 'Error updating student',
                 'error' => $error->getMessage()
             ];
 
-            return response()->json($data, 500);
+            return response()->json($data, Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -105,6 +104,42 @@ class StudentController extends Controller
      */
     public function destroy(Student $student)
     {
-        //
+
+        try {
+            $student->delete();
+            $data = [
+                'message' => 'Student successfully deleted'
+            ];
+            return response()->json($data, Response::HTTP_OK);
+        } catch (\Throwable $error) {
+            $data = [
+                'message' => 'Error deleting student',
+                'error' => $error->getMessage()
+            ];
+            return response()->json($data, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Attach course to student.
+     */
+    public function attach(Request $request)
+    {
+        try {
+            $student = Student::find($request->student_id);
+            $student->courses()->attach($request->course_id);
+
+            $data = [
+                'message' => 'Course successfully attached',
+                'student' => $student->id
+            ];
+            return response()->json($data, Response::HTTP_CREATED);
+        } catch (\Throwable $error) {
+            $data = [
+                'message' => 'Error attaching course to student',
+                'error' => $error->getMessage()
+            ];
+            return response()->json($data, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }
