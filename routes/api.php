@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -15,15 +16,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// authentication routes
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
 
+// student routes
 Route::prefix('students')->group(__DIR__ . '/api/studentRoutes.php');
-Route::resource('students', StudentController::class)
-    ->missing(function () {
-        $data = [
-            'message' => 'Student resource not found'
-        ];
-        return response()->json($data, 404);
-    });

@@ -81,8 +81,15 @@ class StudentController extends Controller
     public function show(int $student)
     {
         try {
-            $data = Student::with('courses')->find($student);
-            return response()->json($data, Response::HTTP_OK);
+            $user = Student::with('courses')->find($student);
+
+            if (!$user) {
+                $data = [
+                    'message' => 'Student not found',
+                ];
+                return response()->json($data, Response::HTTP_NOT_FOUND);
+            }
+            return response()->json($user, Response::HTTP_OK);
         } catch (\Throwable $error) {
             $data = [
                 'message' => 'Error retreiving student',
