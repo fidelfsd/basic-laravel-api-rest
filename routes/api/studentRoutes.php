@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\StudentController;
+use App\Http\Middleware\EnsureIsAdmin;
 use Illuminate\Support\Facades\Route;
 
 // -----------------------------------------------------------------------------
@@ -12,7 +13,7 @@ Route::post('/course', [StudentController::class, 'attach']);
 Route::post('/course/detach', [StudentController::class, 'detach']);
 
 // protected routes for admin
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum', EnsureIsAdmin::class])->group(function () {
     Route::get('/', [StudentController::class, 'index']);
     Route::post('/', [StudentController::class, 'store']);
     Route::get('/{student}', [StudentController::class, 'show']);

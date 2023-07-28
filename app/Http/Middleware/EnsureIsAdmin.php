@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\UserRole;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,6 +17,14 @@ class EnsureIsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $userRole = Auth::user()->role_id;
+
+        if ($userRole !== UserRole::ADMIN->value) {
+            $data = [
+                'message' => 'You are not allowed to access this resource',
+            ];
+            return response()->json($data, Response::HTTP_UNAUTHORIZED);
+        }
 
         return $next($request);
     }
